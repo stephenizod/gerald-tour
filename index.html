@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Gerald's Windsor Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --sky: #4a90e2; --sky-dark: #2c6fba; --sky-light: #deeeff;
+    --sun: #f5a623; --sun-light: #fff4e0;
+    --red: #e8402a; --red-light: #fdecea;
+    --bg: #f0f7ff; --white: #ffffff;
+    --ink: #1a2a3a; --muted: #6b8099; --border: #cde0f5;
+    --gerald-bg: #1e3a5f; --gerald-bubble: #2a5298; --gerald-text: #ffffff;
+    --task-bg: #fff8e6; --task-border: #f5a623; --task-text: #7a4500;
+    --shadow: 0 3px 16px rgba(74,144,226,0.15);
+    --radius: 18px; --radius-sm: 10px;
+  }
+  html, body { height: 100%; background: var(--bg); font-family: 'Nunito', system-ui, sans-serif; color: var(--ink); overflow: hidden; }
+  #app { display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--bg); }
+
+  /* ── Paywall ── */
+  #paywall {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100dvh;
+    background: var(--sky);
+    overflow-y: auto;
+    padding-bottom: 32px;
+  }
+
+  #paywall.hidden { display: none; }
+
+  .paywall-sky {
+    width: 100%;
+    background: var(--sky);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 0;
+    position: relative;
+  }
+
+  .castle-scene {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  .paywall-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--white);
+    border-radius: 32px 32px 0 0;
+    padding: 28px 28px 40px;
+    margin-top: -24px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .paywall-eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sky);
+  }
+
+  .paywall-title {
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--gerald-bg);
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  .paywall-title span { color: var(--red); }
+
+  .paywall-desc {
+    font-size: 15px;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.6;
+    max-width: 300px;
+  }
+
+  .paywall-features {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 0;
+  }
+
+  .feature-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .feature-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--sky-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .paywall-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .paywall-price {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--gerald-bg);
+  }
+
+  .paywall-price-sub {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  #pay-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--sun);
+    color: var(--ink);
+    border: none;
+    border-radius: 28px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 18px rgba(245,166,35,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  #pay-btn:hover { background: #e8960e; }
+  #pay-btn:active { transform: scale(0.97); }
+  #pay-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .paywall-small {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  /* ── Tour app (same as before) ── */
+  #tour-app { display: none; flex-direction: column; height: 100dvh; }
+  #tour-app.visible { display: flex; }
+
+  #header { background: var(--gerald-bg); padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; border-bottom: 3px solid var(--sky); }
+  #avatar-wrap { width: 52px; height: 52px; border-radius: 50%; background: var(--sky-light); border: 3px solid var(--sun); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  #avatar-wrap svg { width: 52px; height: 64px; margin-top: 8px; }
+  #header-info { flex: 1; min-width: 0; }
+  #header-name { font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1.2; }
+  #header-sub { font-size: 11px; color: #a8c8f0; font-weight: 600; margin-top: 1px; }
+  #progress-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+  #progress-label { font-size: 11px; font-weight: 700; color: #a8c8f0; white-space: nowrap; }
+  #progress-bar-track { width: 70px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; }
+  #progress-bar-fill { height: 100%; background: var(--sun); border-radius: 3px; transition: width 0.5s ease; width: 0%; }
+  #messages { flex: 1; overflow-y: auto; padding: 16px 14px 8px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+  #messages::-webkit-scrollbar { width: 0; }
+  .msg { display: flex; flex-direction: column; animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.92) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .msg.gerald { align-items: flex-start; }
+  .msg.user { align-items: flex-end; }
+  .msg.system { align-items: center; }
+  .msg-row { display: flex; align-items: flex-end; gap: 8px; }
+  .msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--sky-light); border: 2px solid var(--sun); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .msg-avatar svg { width: 32px; height: 40px; margin-top: 5px; }
+  .bubble { max-width: 82%; padding: 11px 15px; font-size: 15px; line-height: 1.55; }
+  .gerald .bubble { background: var(--gerald-bubble); color: var(--gerald-text); border-radius: var(--radius) var(--radius) var(--radius) 4px; font-weight: 600; box-shadow: var(--shadow); }
+  .user .bubble { background: var(--white); color: var(--ink); border-radius: var(--radius) var(--radius) 4px var(--radius); border: 2px solid var(--border); font-weight: 600; box-shadow: var(--shadow); }
+  .system .bubble { background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; text-align: center; padding: 2px 8px; max-width: 100%; letter-spacing: 0.04em; }
+  .task-box { margin: 2px 0 2px 40px; padding: 11px 14px; background: var(--task-bg); border-left: 4px solid var(--task-border); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 14px; font-weight: 700; color: var(--task-text); animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .task-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sun); margin-bottom: 5px; }
+  .reveal-btn { align-self: flex-start; margin: 2px 0 2px 40px; padding: 8px 16px; background: var(--red-light); border: 2px solid var(--red); border-radius: 20px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; color: var(--red); cursor: pointer; transition: all 0.15s; animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .reveal-btn:hover { background: var(--red); color: #fff; }
+  .stop-badge { display: flex; align-items: center; gap: 8px; padding: 4px 0; animation: popIn 0.25s ease both; }
+  .stop-badge-line { flex: 1; height: 2px; background: var(--border); border-radius: 1px; }
+  .stop-badge-text { font-size: 11px; font-weight: 800; color: var(--sky); white-space: nowrap; letter-spacing: 0.04em; text-transform: uppercase; }
+  #typing { display: none; align-items: flex-end; padding: 0 14px 4px; gap: 8px; flex-shrink: 0; }
+  #typing.visible { display: flex; }
+  .typing-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--sky-light); border: 2px solid var(--sun); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .typing-avatar svg { width: 32px; height: 40px; margin-top: 5px; }
+  #typing-dots { background: var(--gerald-bubble); border-radius: var(--radius) var(--radius) var(--radius) 4px; padding: 12px 18px; display: flex; gap: 5px; align-items: center; box-shadow: var(--shadow); }
+  .dot { width: 7px; height: 7px; background: rgba(255,255,255,0.6); border-radius: 50%; animation: bounce 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-6px); opacity: 1; } }
+  #input-area { flex-shrink: 0; padding: 10px 14px 14px; background: var(--white); border-top: 2px solid var(--border); display: flex; gap: 10px; align-items: flex-end; }
+  #user-input { flex: 1; padding: 11px 16px; border: 2px solid var(--border); border-radius: 24px; background: var(--bg); font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 600; color: var(--ink); resize: none; outline: none; min-height: 44px; max-height: 100px; line-height: 1.4; transition: border-color 0.2s; -webkit-appearance: none; }
+  #user-input:focus { border-color: var(--sky); }
+  #user-input::placeholder { color: var(--muted); }
+  #send-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--sky); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, transform 0.1s; box-shadow: 0 3px 10px rgba(74,144,226,0.4); }
+  #send-btn:hover { background: var(--sky-dark); }
+  #send-btn:active { transform: scale(0.92); }
+  #send-btn svg { width: 20px; height: 20px; fill: #fff; }
+  #end-screen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px 24px; flex: 1; gap: 16px; background: var(--bg); }
+  #end-screen.visible { display: flex; }
+  #end-gerald { width: 100px; height: 100px; border-radius: 50%; background: var(--sky-light); border: 4px solid var(--sun); overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+  #end-gerald svg { width: 100px; height: 126px; margin-top: 16px; }
+  #end-title { font-size: 26px; font-weight: 800; color: var(--gerald-bg); }
+  #end-sub { font-size: 15px; color: var(--muted); font-weight: 600; line-height: 1.6; max-width: 300px; }
+  #end-stats { background: var(--gerald-bg); color: #fff; border-radius: 20px; padding: 18px 28px; width: 100%; max-width: 320px; display: flex; justify-content: space-around; }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .stat-num { font-size: 30px; font-weight: 800; color: var(--sun); }
+  .stat-label { font-size: 12px; font-weight: 700; color: #a8c8f0; }
+  #restart-btn { padding: 13px 32px; background: var(--sky); color: #fff; border: none; border-radius: 28px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 4px 14px rgba(74,144,226,0.35); }
+  #restart-btn:hover { background: var(--sky-dark); }
+  #restart-btn:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<!-- ── Paywall ── -->
+<div id="paywall">
+  <div class="paywall-sky">
+    <!-- Castle + Gerald scene -->
+    <svg class="castle-scene" viewBox="0 0 380 280" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sky gradient via layered shapes -->
+      <rect x="0" y="0" width="380" height="280" fill="#4a90e2"/>
+      <!-- Clouds -->
+      <ellipse cx="60" cy="40" rx="35" ry="18" fill="#fff" opacity="0.85"/>
+      <ellipse cx="90" cy="33" rx="25" ry="16" fill="#fff" opacity="0.85"/>
+      <ellipse cx="40" cy="38" rx="20" ry="13" fill="#fff" opacity="0.85"/>
+      <ellipse cx="290" cy="55" rx="40" ry="18" fill="#fff" opacity="0.75"/>
+      <ellipse cx="320" cy="48" rx="28" ry="15" fill="#fff" opacity="0.75"/>
+      <ellipse cx="265" cy="52" rx="22" ry="13" fill="#fff" opacity="0.75"/>
+      <!-- Ground -->
+      <rect x="0" y="220" width="380" height="60" fill="#4caf6f"/>
+      <ellipse cx="190" cy="220" rx="200" ry="12" fill="#3d9e5f"/>
+      <!-- Castle wall -->
+      <rect x="40" y="110" width="300" height="115" fill="#d4c5a0"/>
+      <rect x="40" y="110" width="300" height="8" fill="#c4b490"/>
+      <!-- Battlements -->
+      <rect x="40" y="92" width="22" height="20" rx="2" fill="#d4c5a0"/>
+      <rect x="72" y="92" width="22" height="20" rx="2" fill="#d4c5a0"/>
+      <rect x="104" y="92" width="22" height="20" rx="2" fill="#d4c5a0"/>
+      <rect x="258" y="92" width="22" height="20" rx="2" fill="#d4c5a0"/>
+      <rect x="290" y="92" width="22" height="20" rx="2" fill="#d4c5a0"/>
+      <rect x="318" y="92" width="22" height="20" rx="2" fill="#d4c5a0"/>
+      <!-- Round tower -->
+      <rect x="140" y="55" width="100" height="170" rx="8" fill="#c8b88a"/>
+      <rect x="148" y="38" width="22" height="20" rx="2" fill="#c8b88a"/>
+      <rect x="176" y="38" width="22" height="20" rx="2" fill="#c8b88a"/>
+      <rect x="204" y="38" width="22" height="20" rx="2" fill="#c8b88a"/>
+      <ellipse cx="190" cy="58" rx="52" ry="8" fill="#b8a87a"/>
+      <!-- Tower windows -->
+      <rect x="176" y="78" width="28" height="38" rx="14" fill="#7a9cc0"/>
+      <rect x="176" y="135" width="28" height="38" rx="14" fill="#7a9cc0"/>
+      <!-- Castle gate -->
+      <rect x="162" y="178" width="56" height="47" rx="28" fill="#5a4a2a"/>
+      <rect x="168" y="184" width="44" height="41" rx="22" fill="#3a2e18"/>
+      <!-- Castle windows -->
+      <rect x="68" y="135" width="20" height="28" rx="10" fill="#7a9cc0"/>
+      <rect x="108" y="135" width="20" height="28" rx="10" fill="#7a9cc0"/>
+      <rect x="252" y="135" width="20" height="28" rx="10" fill="#7a9cc0"/>
+      <rect x="292" y="135" width="20" height="28" rx="10" fill="#7a9cc0"/>
+      <!-- Flag -->
+      <line x1="190" y1="20" x2="190" y2="42" stroke="#888" stroke-width="2"/>
+      <polygon points="190,20 215,28 190,36" fill="#e8402a"/>
+
+      <!-- Gerald character -->
+      <!-- Body -->
+      <ellipse cx="310" cy="248" rx="28" ry="12" fill="#1a4a8a"/>
+      <rect x="285" y="208" width="50" height="45" rx="10" fill="#2563a8"/>
+      <!-- Arms -->
+      <rect x="270" y="212" width="18" height="38" rx="8" fill="#2563a8"/>
+      <rect x="317" y="212" width="18" height="38" rx="8" fill="#2563a8"/>
+      <!-- Waving hand -->
+      <ellipse cx="268" cy="248" rx="10" ry="9" fill="#FDDBB4"/>
+      <ellipse cx="261" cy="240" rx="5" ry="7" fill="#FDDBB4"/>
+      <ellipse cx="256" cy="233" rx="4" ry="5" fill="#FDDBB4"/>
+      <!-- Legs -->
+      <rect x="291" y="248" width="14" height="28" rx="6" fill="#1a3a7a"/>
+      <rect x="309" y="248" width="14" height="28" rx="6" fill="#1a3a7a"/>
+      <rect x="288" y="271" width="18" height="8" rx="4" fill="#222"/>
+      <rect x="308" y="271" width="18" height="8" rx="4" fill="#222"/>
+      <!-- Head -->
+      <ellipse cx="310" cy="192" rx="26" ry="28" fill="#FDDBB4"/>
+      <!-- Hair -->
+      <path d="M286 188 Q284 165 292 155 Q300 143 310 142 Q320 143 328 155 Q336 165 334 188" fill="#c0341d"/>
+      <path d="M284 185 Q280 168 285 158 Q280 172 282 188Z" fill="#a02810"/>
+      <path d="M336 185 Q340 168 335 158 Q340 172 338 188Z" fill="#a02810"/>
+      <!-- Eyes -->
+      <ellipse cx="300" cy="190" rx="8" ry="8" fill="#fff"/>
+      <ellipse cx="320" cy="190" rx="8" ry="8" fill="#fff"/>
+      <ellipse cx="300" cy="191" rx="5" ry="5" fill="#4a90d9"/>
+      <ellipse cx="320" cy="191" rx="5" ry="5" fill="#4a90d9"/>
+      <ellipse cx="300" cy="191" rx="2.5" ry="2.5" fill="#1a2f4a"/>
+      <ellipse cx="320" cy="191" rx="2.5" ry="2.5" fill="#1a2f4a"/>
+      <ellipse cx="301" cy="189" rx="1.2" ry="1.2" fill="#fff"/>
+      <ellipse cx="321" cy="189" rx="1.2" ry="1.2" fill="#fff"/>
+      <!-- Glasses -->
+      <rect x="291" y="183" width="18" height="12" rx="5" fill="none" stroke="#4a3000" stroke-width="2"/>
+      <rect x="312" y="183" width="18" height="12" rx="5" fill="none" stroke="#4a3000" stroke-width="2"/>
+      <line x1="309" y1="188" x2="312" y2="188" stroke="#4a3000" stroke-width="2" stroke-linecap="round"/>
+      <line x1="291" y1="188" x2="284" y2="185" stroke="#4a3000" stroke-width="2" stroke-linecap="round"/>
+      <line x1="330" y1="188" x2="337" y2="185" stroke="#4a3000" stroke-width="2" stroke-linecap="round"/>
+      <!-- Smile -->
+      <path d="M302 206 Q310 213 318 206" stroke="#c0845a" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Cheeks -->
+      <ellipse cx="292" cy="199" rx="6" ry="4" fill="#e8a87c"/>
+      <ellipse cx="328" cy="199" rx="6" ry="4" fill="#e8a87c"/>
+      <!-- Speech bubble -->
+      <rect x="148" y="148" width="130" height="46" rx="14" fill="#fff"/>
+      <polygon points="255,188 270,198 258,194" fill="#fff"/>
+      <text x="213" y="168" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#1e3a5f" text-anchor="middle">I seem to have</text>
+      <text x="213" y="183" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#e8402a" text-anchor="middle">forgotten everything!</text>
+    </svg>
+  </div>
+
+  <div class="paywall-card">
+    <div class="paywall-eyebrow">Windsor's most unreliable historian needs you</div>
+    <div class="paywall-title">Help <span>Gerald</span> remember Windsor</div>
+    <div class="paywall-desc">Walk around Windsor correcting Gerald Fitch — former BBC historian, current catastrophic amnesiac — across 10 landmark stops.</div>
+
+    <div class="paywall-features">
+      <div class="feature-row"><div class="feature-icon">🏰</div>10 Windsor landmarks to discover</div>
+      <div class="feature-row"><div class="feature-icon">🚶</div>A 90-minute self-guided walking tour</div>
+      <div class="feature-row"><div class="feature-icon">📖</div>Real history, hilariously misremembered</div>
+      <div class="feature-row"><div class="feature-icon">👨‍👩‍👧</div>Fun for families, adults &amp; history lovers</div>
+    </div>
+
+    <div class="paywall-price-row">
+      <div class="paywall-price">£5</div>
+      <div class="paywall-price-sub">one-off · no subscription</div>
+    </div>
+
+    <button id="pay-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+      Pay £5 &amp; start the tour
+    </button>
+    <div class="paywall-small">Secure payment by Stripe · Works in your mobile browser · No app needed</div>
+  </div>
+</div>
+
+<!-- ── Tour app ── -->
+<div id="tour-app">
+  <div id="header">
+    <div id="avatar-wrap">
+      <svg viewBox="60 20 220 280" xmlns="http://www.w3.org/2000/svg"><ellipse cx="170" cy="120" rx="72" ry="78" fill="#FDDBB4"/><path d="M118 108 Q105 72 118 52 Q135 28 170 26 Q205 28 222 52 Q235 72 222 108" fill="#c0341d"/><path d="M112 105 Q98 80 112 60 Q105 85 108 108Z" fill="#a02810"/><path d="M228 105 Q242 80 228 60 Q235 85 232 108Z" fill="#a02810"/><ellipse cx="148" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="192" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="149" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="193" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="149" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="193" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="152" cy="116" rx="2.5" ry="2.5" fill="#fff"/><ellipse cx="196" cy="116" rx="2.5" ry="2.5" fill="#fff"/><rect x="130" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><rect x="178" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><line x1="172" y1="110" x2="178" y2="110" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="130" y1="110" x2="118" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="220" y1="110" x2="232" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><path d="M150 158 Q170 170 190 158" stroke="#c0845a" stroke-width="2.5" fill="none" stroke-linecap="round"/><ellipse cx="135" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="205" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="170" cy="220" rx="80" ry="38" fill="#2563a8"/><rect x="92" y="200" width="156" height="80" rx="16" fill="#2563a8"/><rect x="78" y="215" width="28" height="65" rx="10" fill="#2563a8"/><rect x="234" y="215" width="28" height="65" rx="10" fill="#2563a8"/></svg>
+    </div>
+    <div id="header-info">
+      <div id="header-name">Gerald Fitch</div>
+      <div id="header-sub">Historian · TV Star (Briefly) · Windsor Expert</div>
+    </div>
+    <div id="progress-wrap">
+      <div id="progress-label">Stop 0 of 10</div>
+      <div id="progress-bar-track"><div id="progress-bar-fill"></div></div>
+    </div>
+  </div>
+  <div id="messages"></div>
+  <div id="typing">
+    <div class="typing-avatar">
+      <svg viewBox="60 20 220 280" xmlns="http://www.w3.org/2000/svg"><ellipse cx="170" cy="120" rx="72" ry="78" fill="#FDDBB4"/><path d="M118 108 Q105 72 118 52 Q135 28 170 26 Q205 28 222 52 Q235 72 222 108" fill="#c0341d"/><path d="M112 105 Q98 80 112 60 Q105 85 108 108Z" fill="#a02810"/><path d="M228 105 Q242 80 228 60 Q235 85 232 108Z" fill="#a02810"/><ellipse cx="148" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="192" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="149" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="193" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="149" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="193" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="152" cy="116" rx="2.5" ry="2.5" fill="#fff"/><ellipse cx="196" cy="116" rx="2.5" ry="2.5" fill="#fff"/><rect x="130" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><rect x="178" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><line x1="172" y1="110" x2="178" y2="110" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="130" y1="110" x2="118" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="220" y1="110" x2="232" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><path d="M150 158 Q170 170 190 158" stroke="#c0845a" stroke-width="2.5" fill="none" stroke-linecap="round"/><ellipse cx="135" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="205" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="170" cy="220" rx="80" ry="38" fill="#2563a8"/><rect x="92" y="200" width="156" height="80" rx="16" fill="#2563a8"/><rect x="78" y="215" width="28" height="65" rx="10" fill="#2563a8"/><rect x="234" y="215" width="28" height="65" rx="10" fill="#2563a8"/></svg>
+    </div>
+    <div id="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+  <div id="input-area">
+    <textarea id="user-input" placeholder="Type your answer here…" rows="1"></textarea>
+    <button id="send-btn" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+  </div>
+  <div id="end-screen">
+    <div id="end-gerald">
+      <svg viewBox="60 20 220 280" xmlns="http://www.w3.org/2000/svg"><ellipse cx="170" cy="120" rx="72" ry="78" fill="#FDDBB4"/><path d="M118 108 Q105 72 118 52 Q135 28 170 26 Q205 28 222 52 Q235 72 222 108" fill="#c0341d"/><path d="M112 105 Q98 80 112 60 Q105 85 108 108Z" fill="#a02810"/><path d="M228 105 Q242 80 228 60 Q235 85 232 108Z" fill="#a02810"/><ellipse cx="148" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="192" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="149" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="193" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="149" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="193" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="152" cy="116" rx="2.5" ry="2.5" fill="#fff"/><ellipse cx="196" cy="116" rx="2.5" ry="2.5" fill="#fff"/><rect x="130" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><rect x="178" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><line x1="172" y1="110" x2="178" y2="110" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="130" y1="110" x2="118" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="220" y1="110" x2="232" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><path d="M148 162 Q170 178 192 162" stroke="#c0845a" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="135" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="205" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="170" cy="220" rx="80" ry="38" fill="#2563a8"/><rect x="92" y="200" width="156" height="80" rx="16" fill="#2563a8"/><rect x="78" y="215" width="28" height="65" rx="10" fill="#2563a8"/><rect x="234" y="215" width="28" height="65" rx="10" fill="#2563a8"/></svg>
+    </div>
+    <div id="end-title">Tour Complete!</div>
+    <div id="end-sub">You've helped Gerald remember Windsor. He was, on reflection, almost entirely right about most of it.</div>
+    <div id="end-stats">
+      <div class="stat"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">correct</div></div>
+      <div class="stat"><div class="stat-num" id="stat-reveals">0</div><div class="stat-label">reveals used</div></div>
+      <div class="stat"><div class="stat-num" id="stat-stops">10</div><div class="stat-label">stops walked</div></div>
+    </div>
+    <button id="restart-btn">Play Again</button>
+  </div>
+</div>
+
+<script>
+const PUBLISHABLE_KEY = 'pk_test_51TDAAxGtD0ZrwZbH6hxVL0ipcKHD9B1ms1RNchMfgDzXHsLdAVCgjlFd22wbctC2WxFn27AdacR9AtfDe4Iq9uGJ008FYDxl0V';
+
+const GERALD_SVG = `<svg viewBox="60 20 220 280" xmlns="http://www.w3.org/2000/svg"><ellipse cx="170" cy="120" rx="72" ry="78" fill="#FDDBB4"/><path d="M118 108 Q105 72 118 52 Q135 28 170 26 Q205 28 222 52 Q235 72 222 108" fill="#c0341d"/><path d="M112 105 Q98 80 112 60 Q105 85 108 108Z" fill="#a02810"/><path d="M228 105 Q242 80 228 60 Q235 85 232 108Z" fill="#a02810"/><ellipse cx="148" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="192" cy="118" rx="19" ry="20" fill="#fff"/><ellipse cx="149" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="193" cy="119" rx="12" ry="13" fill="#4a90d9"/><ellipse cx="149" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="193" cy="119" rx="6" ry="7" fill="#1a2f4a"/><ellipse cx="152" cy="116" rx="2.5" ry="2.5" fill="#fff"/><ellipse cx="196" cy="116" rx="2.5" ry="2.5" fill="#fff"/><rect x="130" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><rect x="178" y="100" width="42" height="26" rx="11" fill="none" stroke="#4a3000" stroke-width="3"/><line x1="172" y1="110" x2="178" y2="110" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="130" y1="110" x2="118" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><line x1="220" y1="110" x2="232" y2="105" stroke="#4a3000" stroke-width="3" stroke-linecap="round"/><path d="M150 158 Q170 170 190 158" stroke="#c0845a" stroke-width="2.5" fill="none" stroke-linecap="round"/><ellipse cx="135" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="205" cy="140" rx="9" ry="5" fill="#e8a87c"/><ellipse cx="170" cy="220" rx="80" ry="38" fill="#2563a8"/><rect x="92" y="200" width="156" height="80" rx="16" fill="#2563a8"/><rect x="78" y="215" width="28" height="65" rx="10" fill="#2563a8"/><rect x="234" y="215" width="28" height="65" rx="10" fill="#2563a8"/></svg>`;
+
+// ── Payment gate ───────────────────────────────────────────────────────────
+
+function hasPaid() {
+  return localStorage.getItem('gerald_paid') === 'true';
+}
+
+function markPaid() {
+  localStorage.setItem('gerald_paid', 'true');
+}
+
+function checkPaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('paid') === 'true') {
+    markPaid();
+    window.history.replaceState({}, '', window.location.pathname);
+    return true;
+  }
+  return false;
+}
+
+function showPaywall() {
+  document.getElementById('paywall').classList.remove('hidden');
+  document.getElementById('tour-app').classList.remove('visible');
+}
+
+function showTour() {
+  document.getElementById('paywall').classList.add('hidden');
+  document.getElementById('tour-app').classList.add('visible');
+}
+
+document.getElementById('pay-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+  try {
+    const res = await fetch('/.netlify/functions/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'No URL returned');
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg> Pay £5 & start the tour`;
+    alert('Payment unavailable right now — please try again.');
+    console.error(err);
+  }
+});
+
+// ── Tour data ──────────────────────────────────────────────────────────────
+
+const STOPS = [
+  {id:'start',label:'Start · Queen Victoria Statue',gerald:`Oh, hello! You found me. Brilliant.\n\nI'm Gerald Fitch — historian, author of "Windsor: A Complete History" (Volume 1 only; the publisher and I had a falling out), and former host of "Fitch's Britain" on BBC Four. You may remember the show. It ran for one series in 2019 before being "rested" — their word — due to "scheduling pressures" — also their word. I maintain the viewing figures were perfectly respectable for a Tuesday at 11pm.\n\nAnyway. I've been wandering Windsor in something of a crisis. My memory, normally razor-sharp, has chosen today to be unhelpful. I need someone with functioning eyes and basic literacy to walk with me and check the facts. In return I'll tell you everything I know about Windsor. Some of it will even be correct.\n\nWe start here, at the statue of Queen Victoria. Find the plaque on the base. What year was this statue erected?`,task:'Find the plaque on the base of the Queen Victoria statue. What year does it say the statue was erected?',keywords:['1887'],nudge:`Hmm, not quite. The answer is right there on the stone plinth beneath her feet — look for a four-digit number in the 1880s. Take your time!`,correct:`1887! Yes — I knew that. Golden Jubilee. Fifty years on the throne. I had 1887 absolutely ready.`,richHistory:`Victoria spent much of her childhood at Windsor and made it her principal residence as Queen. After Prince Albert died here in 1861, she wore black mourning clothes for the remaining forty years of her reign — earning the nickname "The Widow of Windsor." She also had to propose to Albert herself, since royal protocol meant he couldn't ask her. She did it after knowing him five days.`,directions:`Excellent! Keep the castle on your left and walk up Castle Hill — the steep bit, yes, I'm afraid so. At the top, find the information boards near the main castle entrance. We're looking at the Round Tower. You can't miss it. It's the large round tower.`,reveal:`The statue was erected in 1887 for Queen Victoria's Golden Jubilee. Sculpted by Sir Edgar Boehm, paid for by the people of Windsor.`},
+  {id:'round-tower',label:'Stop 1 · The Round Tower',gerald:`The Round Tower! The heart of Windsor Castle, the icon on every postcard, the reason this entire town exists. William the Conqueror built it — wood first, then stone — and it has dominated this hill for nearly a thousand years.\n\nFind the information board near the castle entrance. What century did Henry II rebuild the Round Tower in stone?`,task:'Find the castle information board near the main entrance. What century did Henry II rebuild the Round Tower in stone?',keywords:['12th','twelfth','1170','1100s'],nudge:`Not quite — centuries blur together! Check the information board near the castle entrance. It mentions Henry II specifically. What century?`,correct:`The 12th century! 1170s to be precise. I'd have said that immediately had you just asked me directly.`,richHistory:`The Round Tower isn't quite what it appears. George IV had it raised by thirty feet in the 1820s purely for dramatic effect. You can still see the ring of stone marking the original top. Today it houses the Royal Archives, including Queen Victoria's 141 volumes of personal diaries. I find this professionally humiliating.`,directions:`Come back down Castle Hill, past the Queen Victoria statue, and turn left along the High Street. The Guildhall is about a hundred metres on your right — the colonnaded building that looks like it's auditioning to be a Roman temple. Stop there and look at the south face.`,reveal:`Henry II rebuilt the Round Tower in stone in the 1170s — the 12th century.`},
+  {id:'henry-gateway',label:'Stop 2 · Henry VIII Gateway',gerald:`The Henry VIII Gateway! The main public entrance to the castle. Every tourist who visits Windsor Castle walks through a door Henry VIII built. There's something rather poetic about that.\n\nLook up at the carved heraldic symbols above the arch. Whose coat of arms is displayed there? The information panel nearby will tell you.`,task:'Look at the Henry VIII Gateway arch and the information panel beside it. Whose coat of arms is displayed above the entrance?',keywords:['henry','seymour','jane','henry viii','henry 8'],nudge:`Look carefully at the carved stonework above the arch — there are heraldic shields up there! The panel nearby identifies them. You're looking for a name, possibly two names.`,correct:`Henry VIII — and Jane Seymour! Wife number three. The one he apparently genuinely liked. I was going to say that.`,richHistory:`Henry VIII is buried just inside these walls in St George's Chapel, alongside Jane Seymour. He'd planned a grand mausoleum for himself but it was never finished. For a man who spent his life demanding monuments to his greatness, he ended up in a relatively modest vault. There's a lesson about delegation there.`,directions:`From the gateway, walk back down Castle Hill and turn right along the High Street. The Guildhall is about a hundred metres on your right. Stop there and look at the south face of the building.`,reveal:`The coat of arms above the gateway belongs to Henry VIII, alongside those of Jane Seymour, his third wife.`},
+  {id:'guildhall',label:'Stop 3 · Windsor Guildhall',gerald:`The Guildhall! Magnificent. Grade I listed. There's a famous story here — the inner columns in the open ground floor don't quite touch the ceiling. Legend says Christopher Wren added them to prove a point to the council who didn't trust his engineering. I love this story deeply.\n\nWalk to the south end of the building — furthest from the castle. Look up at the wall above the arches. There's a stone statue in a niche with a carved inscription beneath it. Whose name is on that inscription?`,task:'Look at the south face of the Guildhall. Find the statue in the niche and the carved inscription beneath it. Whose name appears?',keywords:['wren','christopher wren','prince george','george','denmark'],nudge:`Check the south end — furthest from the castle. Look up at the wall above the arches. There's a statue in a niche with a name carved beneath it. Whose name?`,correct:`Christopher Wren — the younger! Not the famous one. His son. The father built the building, the son put a statue on it, historians have been confusing the two ever since.`,richHistory:`Charles and Camilla were married here in April 2005 — the first time a future king had married in a civil ceremony. The corn market that used to operate under those arches is long gone, but you're standing exactly where Windsor traders haggled over grain in the 1690s.`,directions:`Take approximately four steps to your right. The Crooked House is literally next door. You cannot miss it — it looks like it's had several extremely difficult centuries.`,reveal:`The statue is of Prince George of Denmark, consort of Queen Anne. The inscription names Christopher Wren the younger — son of the architect — who commissioned it in 1713.`},
+  {id:'crooked-house',label:'Stop 4 · The Crooked House',gerald:`The Crooked House! Officially the Market Cross House, though nobody calls it that. It leans at a truly alarming angle. The reason it's crooked is genuinely brilliant: demolished in 1687, a court ordered the council to rebuild it. They were furious. They rebuilt as cheaply as possible using green unseasoned oak that warped as it dried. Serves them right.\n\nFind the plaque or information sign on or near the building. What year was the original structure on this site first built?`,task:'Find the date plaque or information sign on or near the Crooked House. What year was the original structure first built on this site?',keywords:['1592','16th century','sixteenth'],nudge:`There should be a date on or near the building. You're looking for the year the original structure was first built — a number in the 1500s. Have another look!`,correct:`1592! And to the left of the building is Queen Charlotte Street — recorded as the shortest street in Britain. Worth two seconds of your time.`,richHistory:`There's a persistent rumour that the basement has a secret passage to Windsor Castle — reportedly used by Charles II to visit his mistress Nell Gwyn unseen. The passage, if it existed, has been sealed. The building has been a butcher's shop, beer house, jeweller, tea room, and is now a bar. It has never quite decided what it wants to be — but at 400 years old, it's earned the right.`,directions:`Head back along the High Street away from the castle, turn left down Church Street, and follow it round to the Parish Church of St John the Baptist. It's the Georgian church backing onto the castle wall. You'll hear the clock before you see the door.`,reveal:`The original Market Cross House was built in 1592. Demolished in 1687, rebuilt with unseasoned green oak after a court ordered the council to restore it — hence the lean.`},
+  {id:'parish-church',label:'Stop 5 · St John the Baptist Church',gerald:`The Parish Church of St John the Baptist — Windsor's town church, sitting quietly behind the High Street. A handsome Georgian building. I believe it dates from the early 19th century.\n\nFind the foundation date — above the main entrance, on a stone near the door, or on a plaque in the porch. What year was this church built?`,task:'Look for a date on the church entrance or porch wall plaque. What year was St John the Baptist Church built?',keywords:['1822','eighteen twenty two','19th century','nineteenth'],nudge:`Early 19th century — that should help! Look for a foundation date above the entrance or on a plaque in the porch. The number will be in the 1800s.`,correct:`1822! Early 19th century — I said early 19th century and I was right about that part. I'd like that acknowledged. The medieval church it replaced had stood here since the 13th century.`,richHistory:`The church contains a copy of the Last Supper said to have been presented by George III, who worshipped here regularly. George III wandered Windsor's streets chatting to locals who called him "Farmer George" with genuine affection. He was the king who lost America, but Windsor loved him regardless.`,directions:`Walk through Church Lane and head down toward the river — follow signs for Thames Street. You want the bottom of the hill where the castle wall runs alongside the road. The large round tower in the castle wall is our next stop.`,reveal:`St John the Baptist Church was built in 1822, replacing a medieval church on the same site dating to the 13th century.`},
+  {id:'curfew-tower',label:'Stop 6 · Thames Street & Curfew Tower',gerald:`Walk down Thames Street and look up at the castle wall on your left! The large round tower at the western end is the Curfew Tower — one of the very oldest parts of the castle, built by Henry III in the 13th century.\n\nFind an information sign on Thames Street or on the castle wall nearby. What is the Curfew Tower currently used for?`,task:'Look for an information sign near the Curfew Tower on Thames Street. What does it say the tower is currently used for?',keywords:['belfry','bell','bells','clock','archives'],nudge:`You're looking at the right tower — the large round one at the western end of the castle wall. Check the information board nearby. What does the tower currently house?`,correct:`The belfry! And the clock. I'm counting that as correct. Bonus fact: "curfew" comes from the French "couvre-feu" — cover the fire. The bell rang each evening to tell the town to extinguish their hearths. You're welcome.`,richHistory:`During the Second World War, Princesses Elizabeth and Margaret sheltered here while their parents supported the war effort in London. Hitler had reportedly earmarked Windsor as a personal residence after conquering Britain — so it was deliberately not targeted in the Blitz. The princesses slept in the dungeons on the worst nights. They also rehearsed Christmas pantomimes to keep morale up. History contains multitudes.`,directions:`Continue along Thames Street toward the river. Windsor Bridge is at the bottom — the pedestrian one. Cross it into Eton. Yes, we're going to Eton. Try not to feel intimidated.`,reveal:`The Curfew Tower houses the castle's belfry and clock. Built in the 13th century under Henry III, one of the oldest surviving parts of Windsor Castle.`},
+  {id:'bridge',label:'Stop 7 · Windsor Bridge & the Thames',gerald:`Windsor Bridge! The crossing between Windsor and Eton — two towns, one bridge, centuries of polite rivalry. The views are genuinely excellent.\n\nThe swans. You will see swans. The ownership of unmarked mute swans on the Thames is shared between three parties. The Crown is one. I'm embarrassed to admit I can't currently recall the other two. Find the information board near the bridge or riverbank. Who are the three owners of Thames swans?`,task:'Find an information board near Windsor Bridge or the riverbank. Who are the three owners of the swans on the Thames?',keywords:['vintners','dyers','crown','livery','guild'],nudge:`The Crown is one — always the Crown. Two more. Both ancient livery companies — medieval trade guilds. Check the information board near the riverbank. What are the two other names?`,correct:`The Vintners and the Dyers! Medieval guilds. I had "guilds" absolutely ready. The specific names temporarily escaped me. Temporarily.`,richHistory:`Swan ownership is enforced each summer in Swan Upping, where royal and livery company representatives row up the Thames counting and marking the birds. It dates to the 12th century, when swans were a royal delicacy. They're no longer eaten — but the counting continues, because some traditions are too wonderfully peculiar to abandon.`,directions:`Cross the bridge into Eton and walk straight up Eton High Street. Single road, you cannot go wrong. Eton College is at the top — you'll see the chapel tower before the gate. Walk to the main entrance and find the foundation inscription.`,reveal:`The three owners of Thames swans are the Crown, the Worshipful Company of Vintners, and the Worshipful Company of Dyers — a custom dating to the 12th century.`},
+  {id:'eton',label:'Stop 8 · Eton College',gerald:`Eton College! At the far end of this High Street. Nineteen British Prime Ministers were educated here, which either speaks very highly of the school or raises questions about the political system. I will let you decide.\n\nWalk to the main entrance. Find the foundation inscription on the gate or an adjacent wall plaque. What year was Eton founded, and by which king?`,task:'Walk to the Eton College entrance. Find the foundation inscription or gate plaque. What year was it founded, and by which king?',keywords:['1440','henry vi','henry 6','henry the sixth','sixth'],nudge:`The answer should be on the main gate or a wall plaque. You're looking for a year in the 1400s and a king's name. Look carefully at the stonework near the entrance.`,correct:`1440! Henry VI! The full official name is "The King's College of Our Lady of Eton beside Windsor." Nineteen Prime Ministers walked through that gate as schoolboys.`,richHistory:`Henry VI founded the college for seventy poor scholars — a genuinely idealistic act for the 15th century. Within a generation, wealthy families had enrolled their sons as fee-paying pupils and the original vision evaporated. It is now one of the most expensive schools in the country. Henry VI was born at Windsor Castle just across the river. He would have had thoughts about this.`,directions:`Retrace your steps down Eton High Street, cross Windsor Bridge, and turn left along the river. Follow it until you reach Windsor Royal Station — the grand Victorian building that is now, regrettably, a shopping centre. Find the Jubilee Arch entrance.`,reveal:`Eton College was founded in 1440 by King Henry VI as "The King's College of Our Lady of Eton beside Windsor."`,},
+  {id:'station',label:'Stop 9 · Windsor Royal Station',gerald:`The Royal Station! Now a shopping centre — a minor crime against architecture — but the building is extraordinary. Rebuilt for one of Queen Victoria's jubilees and deliberately designed to feel like a palace rather than a railway station.\n\nFind the Jubilee Arch entrance. There should be an inscription or plaque marking the year it was rebuilt. What year does it say?`,task:'Find the Jubilee Arch entrance to Windsor Royal Station. Look for a plaque or inscription. What year was the station rebuilt?',keywords:['1897','eighteen ninety seven','diamond jubilee','diamond'],nudge:`You're looking for a year in the 1890s — rebuilt for one of Victoria's jubilees. Check the Jubilee Arch entrance. Look above the arch or on the wall beside it.`,correct:`1897! Diamond Jubilee — sixty years on the throne. She had a private royal waiting room here, now a restaurant. She never once queued. Some legacies are worth envying.`,richHistory:`Victoria was initially nervous about trains and instructed her first driver in 1842 not to exceed forty miles per hour. By the end of her reign she'd made hundreds of journeys and the railways had been reorganised around her travel habits. Windsor got a second station because the first was considered too far from the castle. When you are the Queen, inconvenience is not tolerated.`,directions:`Our final stop is close! Head up toward the castle, then turn left along Park Street. Follow it until the road ends and Windsor Great Park opens ahead — the Park Street Gate. The Long Walk stretches out in front of you. Find the information board.`,reveal:`Windsor and Eton Central station was rebuilt in 1897 for Queen Victoria's Diamond Jubilee, designed to evoke the grandeur of Paddington.`},
+  {id:'long-walk',label:'Stop 10 · The Long Walk',gerald:`The Long Walk. Three miles of tree-lined avenue running from here to the Copper Horse statue of George III in the Great Park. Created by Charles II after his return from exile — he'd seen Versailles and had Ideas with a capital I.\n\nThe original trees were elms. All killed by Dutch elm disease in the 20th century. I find this personally upsetting every time I think about it. The trees you see now are plane and chestnut, replanted in the 1940s. Fine trees. They're just not the elms.\n\nOne last check. Find the information board at the Park Street gate. What year does it say the Long Walk was originally planted?`,task:'Find the information board at the Park Street gate entrance to The Long Walk. What year does it say the avenue was originally planted?',keywords:['1685','sixteen eighty five','1680','1684','17th century'],nudge:`The information board should be right at the Park Street gate where you're standing. The year is in the 1680s — Charles II planted this after returning from exile. Look for the date.`,correct:`1685! Charles II. There it is. We've done it.`,richHistory:`The Long Walk contains exactly 1,652 trees set nine metres apart, running almost perfectly straight for nearly five kilometres. At the far end stands the Copper Horse — a statue of George III erected by George IV in 1831. George III is remembered as the king who lost America, but he spent more time at Windsor than any monarch before him and wandered the streets chatting to locals who called him Farmer George with genuine affection.`,directions:null,reveal:`The Long Walk was planted by Charles II in 1685, inspired by the avenues of Versailles. The original elms were replaced with plane and chestnut in the 1940s.`}
+];
+
+const FINAL_MESSAGE = `And that, my friend, is Windsor.\n\nThree miles of history and you've walked every significant step of it. The elms are gone, the station is a shopping centre, and I remain — against all reasonable odds — a working historian. We have all adapted.\n\nYou've helped correct me at every stop, which is more corrections than my BBC producer ever managed. The show might have lasted longer if he had. Instead he cancelled it and commissioned a series about competitive cheese rolling in Gloucestershire, which I understand is still running.\n\nThank you. Windsor is better understood because of your efforts today. And I was, on reflection, almost entirely right about most of it.`;
+
+// ── Tour logic ─────────────────────────────────────────────────────────────
+
+let state = {currentStop:0,wrongGuesses:0,revealUsed:[],correctCount:0,revealCount:0,waitingForAnswer:false,finished:false};
+
+const $messages = document.getElementById('messages');
+const $typing   = document.getElementById('typing');
+const $input    = document.getElementById('user-input');
+const $send     = document.getElementById('send-btn');
+
+const scrollBottom = () => setTimeout(() => $messages.scrollTop = $messages.scrollHeight, 50);
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function addStopBadge(label) {
+  const el = document.createElement('div'); el.className = 'stop-badge';
+  el.innerHTML = `<div class="stop-badge-line"></div><div class="stop-badge-text">${esc(label)}</div><div class="stop-badge-line"></div>`;
+  $messages.appendChild(el); scrollBottom();
+}
+
+function addGeraldMessage(text) {
+  return new Promise(r => {
+    const el = document.createElement('div'); el.className = 'msg gerald';
+    el.innerHTML = `<div class="msg-row"><div class="msg-avatar">${GERALD_SVG}</div><div class="bubble">${esc(text).replace(/\n/g,'<br>')}</div></div>`;
+    $messages.appendChild(el); scrollBottom(); r();
+  });
+}
+
+function addUserMessage(text) {
+  const el = document.createElement('div'); el.className = 'msg user';
+  el.innerHTML = `<div class="bubble">${esc(text)}</div>`;
+  $messages.appendChild(el); scrollBottom();
+}
+
+function addTaskBox(text) {
+  const el = document.createElement('div'); el.className = 'task-box';
+  el.innerHTML = `<div class="task-label">Your mission</div>${esc(text)}`;
+  $messages.appendChild(el); scrollBottom();
+}
+
+function addRevealButton(idx) {
+  if (document.getElementById(`reveal-btn-${idx}`)) return;
+  const el = document.createElement('button');
+  el.className = 'reveal-btn'; el.id = `reveal-btn-${idx}`; el.textContent = 'Reveal the answer';
+  el.addEventListener('click', () => handleReveal(idx, el));
+  $messages.appendChild(el); scrollBottom();
+}
+
+const showTyping = () => { $typing.classList.add('visible'); scrollBottom(); };
+const hideTyping = () => $typing.classList.remove('visible');
+
+function updateProgress() {
+  const pct = (state.currentStop / STOPS.length) * 100;
+  document.getElementById('progress-bar-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = state.currentStop >= STOPS.length ? 'Complete!' : `Stop ${state.currentStop} of ${STOPS.length}`;
+}
+
+const checkAnswer = (text, stop) => stop.keywords.some(k => text.toLowerCase().includes(k.toLowerCase()));
+
+async function geraldSays(text, delay=900) {
+  showTyping(); await new Promise(r => setTimeout(r, delay)); hideTyping(); await addGeraldMessage(text);
+}
+
+async function presentStop(index) {
+  const stop = STOPS[index]; state.wrongGuesses = 0; state.waitingForAnswer = true;
+  addStopBadge(stop.label); await geraldSays(stop.gerald, 800); addTaskBox(stop.task); updateProgress(); $input.focus();
+}
+
+async function handleCorrect(stop, index) {
+  state.waitingForAnswer = false; state.correctCount++;
+  const rb = document.getElementById(`reveal-btn-${index}`); if (rb) rb.remove();
+  await geraldSays(stop.correct, 900);
+  if (stop.richHistory) await geraldSays(stop.richHistory, 1200);
+  if (index === STOPS.length - 1) { await geraldSays(FINAL_MESSAGE, 1400); showEndScreen(); }
+  else { await geraldSays(stop.directions, 1400); state.currentStop++; updateProgress(); setTimeout(() => presentStop(state.currentStop), 1200); }
+}
+
+async function handleWrong(stop, index) {
+  state.wrongGuesses++; await geraldSays(stop.nudge, 900); if (state.wrongGuesses >= 2) addRevealButton(index);
+}
+
+async function handleReveal(index, btn) {
+  const stop = STOPS[index]; state.revealCount++; state.revealUsed.push(index); state.waitingForAnswer = false; btn.remove();
+  const el = document.createElement('div'); el.className = 'msg system'; el.innerHTML = `<div class="bubble">— answer revealed —</div>`; $messages.appendChild(el);
+  await geraldSays(`Right. Fine. ${stop.reveal}`, 800);
+  if (stop.richHistory) await geraldSays(stop.richHistory, 1200);
+  if (index === STOPS.length - 1) { await geraldSays(FINAL_MESSAGE, 1400); showEndScreen(); }
+  else { await geraldSays(stop.directions, 1400); state.currentStop++; updateProgress(); setTimeout(() => presentStop(state.currentStop), 1200); }
+  scrollBottom();
+}
+
+async function handleUserInput(text) {
+  if (!text.trim() || !state.waitingForAnswer) return;
+  addUserMessage(text); $input.value = ''; resizeInput();
+  const stop = STOPS[state.currentStop];
+  checkAnswer(text, stop) ? await handleCorrect(stop, state.currentStop) : await handleWrong(stop, state.currentStop);
+}
+
+function showEndScreen() {
+  state.finished = true; state.waitingForAnswer = false;
+  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('messages').style.display = 'none';
+  document.getElementById('stat-correct').textContent = state.correctCount;
+  document.getElementById('stat-reveals').textContent = state.revealCount;
+  document.getElementById('end-screen').classList.add('visible');
+}
+
+function initTour() {
+  state = {currentStop:0,wrongGuesses:0,revealUsed:[],correctCount:0,revealCount:0,waitingForAnswer:false,finished:false};
+  $messages.innerHTML = '';
+  document.getElementById('end-screen').classList.remove('visible');
+  document.getElementById('input-area').style.display = 'flex';
+  document.getElementById('messages').style.display = 'flex';
+  updateProgress(); presentStop(0);
+}
+
+function resizeInput() { $input.style.height = 'auto'; $input.style.height = Math.min($input.scrollHeight, 100) + 'px'; }
+
+$input.addEventListener('input', resizeInput);
+$input.addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); handleUserInput($input.value.trim()); } });
+$send.addEventListener('click', () => handleUserInput($input.value.trim()));
+document.getElementById('restart-btn').addEventListener('click', initTour);
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+if (checkPaymentReturn() || hasPaid()) {
+  showTour(); initTour();
+} else {
+  showPaywall();
+}
+</script>
+</body>
+</html>
