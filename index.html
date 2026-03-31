@@ -501,8 +501,7 @@ document.getElementById('help-submit').addEventListener('click', async () => {
   formData.append('current-stop', currentStop);
 
   try {
-    const res = await fetch('/', { method: 'POST', headers: { 'Accept': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(formData).toString() });
-    if (res.ok) { showHelpSuccess(); }
+const res = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(formData).toString() });    if (res.ok) { showHelpSuccess(); }
     else { throw new Error('Form submission failed'); }
   } catch (err) {
     btn.disabled = false; btn.textContent = 'Send message';
