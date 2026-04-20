@@ -428,9 +428,26 @@ const GERALD_SVG = `<svg viewBox="80 10 200 310" xmlns="http://www.w3.org/2000/s
 function hasPaid() { return localStorage.getItem('gerald_paid') === 'true'; }
 function markPaid() { localStorage.setItem('gerald_paid', 'true'); }
 
-function checkPaymentReturn() {
+async function checkPaymentReturn() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('paid') === 'true') { markPaid(); window.history.replaceState({}, '', window.location.pathname); return true; }
+  if (params.get('paid') === 'true') {
+    const sessionId = params.get('session_id');
+    if (sessionId) {
+      try {
+        const res = await fetch('/.netlify/functions/verify-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId })
+        });
+        const data = await res.json();
+        if (data.paid) {
+          markPaid();
+          window.history.replaceState({}, '', window.location.pathname);
+          return true;
+        }
+      } catch (e) {}
+    }
+  }
   return false;
 }
 
@@ -698,11 +715,13 @@ $send.addEventListener('click', () => handleUserInput($input.value.trim()));
 document.getElementById('restart-btn').addEventListener('click', initTour);
 
 // ── Boot ───────────────────────────────────────────────────────────────────
-if (checkPaymentReturn() || hasPaid()) {
-  showTour(); initTour();
-} else {
-  showPaywall();
-}
+(async () => {
+  if (hasPaid() || await checkPaymentReturn()) {
+    showTour(); initTour();
+  } else {
+    showPaywall();
+  }
+})();
 </script>
 </body>
 </html>
